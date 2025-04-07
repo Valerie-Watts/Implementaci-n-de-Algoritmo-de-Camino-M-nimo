@@ -1,4 +1,3 @@
-```markdown
 # 📊 Algoritmo de Dijkstra en C#
 
 Este proyecto implementa el **algoritmo de Dijkstra** para encontrar el camino más corto desde un vértice origen a todos los demás vértices en un grafo ponderado, utilizando el lenguaje **C#**. La aplicación permite al usuario interactuar mediante consola para construir el grafo y ejecutar el algoritmo.
@@ -27,13 +26,6 @@ Este proyecto implementa el **algoritmo de Dijkstra** para encontrar el camino m
 dotnet build
 dotnet run
 ```
-
-4. Sigue el menú interactivo para:
-   - Agregar aristas
-   - Ver la matriz de adyacencia
-   - Ejecutar el algoritmo de Dijkstra
-
----
 
 ## 🧪 Ejemplo de Uso
 
