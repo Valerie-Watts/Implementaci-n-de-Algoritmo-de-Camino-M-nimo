@@ -6,168 +6,90 @@ using System.Threading.Tasks;
 
 namespace Implementación_de_Algoritmo_de_Camino_Mínimo
 {
-    class Graph
+    class Grafo
     {
-        private Dictionary<int, List<int>> adgList; // Diccionario para almacenar los nodos y sus conexiones
-        public bool Directed; // Indica si el grafo es dirigido o no
+        private int vertices; // Número total de vértices en el grafo
+        private int[,] matriz; // Matriz de adyacencia para representar el grafo
 
-        public Graph(bool Directed)
+        // Constructor que inicializa el número de vértices y la matriz
+        public Grafo(int vertices)
         {
-            adgList = new Dictionary<int, List<int>>(); // Inicializamos la lista de adyacencia
-            this.Directed = Directed; // Guardamos si el grafo es dirigido o no
+            this.vertices = vertices;
+            this.matriz = new int[vertices, vertices];
         }
 
-        // Agrega un vértice al grafo (si no existe)
-        public void InsertVertix(int vertix)
+        // Método para agregar una arista al grafo (nodos numerados desde 1)
+        public void CrearArista(int origen, int destino, int costo)
         {
-            if (adgList.ContainsKey(vertix))
-            {
-                return; // Ya existe, así que no hacemos nada
-            }
-            else
-            {
-                adgList.Add(vertix, new List<int>()); // Se agrega con una lista vacía de conexiones
-            }
+            matriz[origen - 1, destino - 1] = costo;
         }
 
-        // Agrega un arco entre dos vértices (conexión)
-        public void InsertArcs(int vert1, int vert2)
+        // Muestra la matriz de adyacencia con "INF" para valores 0 (sin conexión)
+        public void MostrarMatrizAdyacencia()
         {
-            if (adgList.ContainsKey(vert1) && adgList.ContainsKey(vert2))
+            Console.WriteLine("\nMatriz de Adyacencia:");
+            for (int i = 0; i < vertices; i++)
             {
-                if (Directed)
+                for (int j = 0; j < vertices; j++)
                 {
-                    adgList[vert1].Add(vert2); // Solo de vert1 a vert2 si es dirigido
-                }
-                else
-                {
-                    adgList[vert1].Add(vert2);
-                    adgList[vert2].Add(vert1); // Si es no dirigido, se conecta en ambos sentidos
-                }
-            }
-            else
-            {
-                Console.WriteLine("One or both of the vertices does not exist");
-            }
-        }
-
-        // Imprime la lista de adyacencia para ver las conexiones
-        public void IMprint()
-        {
-            foreach (var item in adgList)
-            {
-                Console.Write(item.Key + " --> [ ");
-                foreach (var dato in item.Value)
-                {
-                    Console.Write(dato + " ");
-                }
-                Console.WriteLine("]");
-            }
-        }
-
-        // Borra un arco entre dos vértices
-        public void eraseArcs(int vert1, int vert2)
-        {
-            if (adgList.ContainsKey(vert1))
-            {
-                adgList[vert1].Remove(vert2);
-            }
-            else
-            {
-                Console.WriteLine("The vertix does not exist");
-            }
-
-            if (!Directed && adgList.ContainsKey(vert2))
-            {
-                adgList[vert2].Remove(vert1); // También eliminamos la conexión inversa si el grafo no es dirigido
-            }
-        }
-
-        // Borra un vértice y todas sus conexiones
-        public void eraseVertix(int vertix)
-        {
-            if (adgList.ContainsKey(vertix))
-            {
-                Console.WriteLine("The vertix has been erased");
-                adgList.Remove(vertix);
-
-                // Eliminamos el vértice de todas las listas de adyacencia
-                foreach (var arcs in adgList.Keys.ToList())
-                {
-                    adgList[arcs].Remove(vertix);
-                }
-            }
-            else
-            {
-                Console.WriteLine("The vertix does not exist");
-            }
-        }
-
-        // Búsqueda en anchura (BFS) desde un vértice inicial
-        public void BFS(int start)
-        {
-            if (adgList.ContainsKey(start))
-            {
-                HashSet<int> visited = new HashSet<int>(); // Para no visitar nodos repetidos
-                Queue<int> queue = new Queue<int>();
-                queue.Enqueue(start);
-                visited.Add(start);
-
-                while (queue.Count > 0)
-                {
-                    int node = queue.Dequeue();
-                    Console.Write(node + " ");
-
-                    // Agregamos los vecinos que no han sido visitados
-                    foreach (var neighbor in adgList[node].OrderBy(n => n))
-                    {
-                        if (!visited.Contains(neighbor))
-                        {
-                            visited.Add(neighbor);
-                            queue.Enqueue(neighbor);
-                        }
-                    }
+                    Console.Write((matriz[i, j] == 0 ? "INF" : matriz[i, j].ToString()) + "\t");
                 }
                 Console.WriteLine();
             }
-            else
-            {
-                Console.WriteLine("The vertix does not exist");
-            }
         }
 
-        // Búsqueda en profundidad (DFS) desde un vértice inicial
-        public void DFS(int start)
+        // Encuentra el índice del vértice con la menor distancia que aún no ha sido procesado
+        private int distanciaMin(int[] distancia, bool[] nodos)
         {
-            if (adgList.ContainsKey(start))
-            {
-                HashSet<int> visited = new HashSet<int>();
-                Stack<int> stack = new Stack<int>();
-                stack.Push(start);
+            int min = int.MaxValue, min_index = -1;
 
-                while (stack.Count > 0)
+            for (int i = 0; i < vertices; i++)
+                if (!nodos[i] && distancia[i] <= min)
                 {
-                    int node = stack.Pop();
-                    if (!visited.Contains(node))
-                    {
-                        Console.Write(node + " ");
-                        visited.Add(node);
+                    min = distancia[i];
+                    min_index = i;
+                }
 
-                        // Agregamos los vecinos en orden inverso para respetar el comportamiento de la pila
-                        foreach (var neighbor in adgList[node].OrderByDescending(n => n))
-                        {
-                            if (!visited.Contains(neighbor))
-                            {
-                                stack.Push(neighbor);
-                            }
-                        }
+            return min_index;
+        }
+
+        // Algoritmo de Dijkstra para encontrar las distancias más cortas desde un nodo origen
+        public void Dijkstra(int origen)
+        {
+            origen--; // Ajustar índice para trabajar desde 0 internamente
+            bool[] nodos = new bool[vertices]; // Para marcar nodos ya procesados
+            int[] distancia = new int[vertices]; // Distancias mínimas desde el nodo origen
+
+            // Inicialización de distancias y visitados
+            for (int i = 0; i < vertices; i++)
+            {
+                distancia[i] = int.MaxValue;
+                nodos[i] = false;
+            }
+
+            distancia[origen] = 0;
+
+            // Recorremos todos los vértices
+            for (int count = 0; count < vertices - 1; count++)
+            {
+                int u = distanciaMin(distancia, nodos); // Vértice con menor distancia
+                nodos[u] = true;
+
+                // Actualizar distancias a los vecinos del vértice seleccionado
+                for (int v = 0; v < vertices; v++)
+                {
+                    if (!nodos[v] && matriz[u, v] != 0 && distancia[u] != int.MaxValue && distancia[u] + matriz[u, v] < distancia[v])
+                    {
+                        distancia[v] = distancia[u] + matriz[u, v];
                     }
                 }
-                Console.WriteLine();
             }
-            else
-            {
-                Console.WriteLine("The vertix does not exist");
+
+            // Mostrar resultados
+            Console.WriteLine("\nDistancia mínima desde el nodo " + (origen + 1) + ":");
+            for (int i = 0; i < vertices; i++)
+            { 
+                Console.WriteLine("A nodo " + (i + 1) + " => " + distancia[i]);
             }
         }
     }
